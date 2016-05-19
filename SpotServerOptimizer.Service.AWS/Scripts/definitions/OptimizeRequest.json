@@ -1,0 +1,18 @@
+﻿{
+  "region": "us-east-1", //required, options: http://docs.aws.amazon.com/general/latest/gr/rande.html
+  "onDemandAutoScaleGroup": "",
+  "spotAutoScaleGroup": "",
+  "numberOfDaysBackToConsider": 3, //defaults to 3
+  "awsAccessKeyId": "",
+  "awsSecretAccessKey": "",
+  "maxSpotPerHour": 10, //optional, no limit otherwise.
+  "scalesOn": { //give any one child of this
+    "requestCount": {
+      "perServerThresholdPerMin": 200
+    },
+    "cpu": { //make sure that the lower threshold for CPU for scaling in is lower than 30% than the upper one.
+      "upperThresholdPercent": 70, //must be greater than 30, logic becomes bad before this, also chances are that you are wasting CPU
+      "scalesWhenGreaterThanThresholdForSecs": 300
+    }
+  }
+}

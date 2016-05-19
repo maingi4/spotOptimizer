@@ -1,0 +1,3 @@
+﻿# SpotServerOptimizer.Service.AWS
+
+

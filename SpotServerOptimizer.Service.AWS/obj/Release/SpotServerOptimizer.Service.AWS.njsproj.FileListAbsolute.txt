@@ -1,0 +1,2 @@
+D:\Research\SpotServerOptimizer\spotOptimizer\SpotServerOptimizer.Service.AWS\bin\Microsoft.NodejsTools.WebRole.dll
+D:\Research\SpotServerOptimizer\spotOptimizer\SpotServerOptimizer.Service.AWS\obj\Release\SpotServerOptimizer.Service.AWS.njsprojResolveAssemblyReference.cache

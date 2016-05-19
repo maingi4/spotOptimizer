@@ -1,0 +1,30 @@
+﻿{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "Stmt1463578835000",
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DeleteScheduledAction",
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:DescribeLoadBalancers",
+        "autoscaling:DescribeScheduledActions",
+        "autoscaling:EnableMetricsCollection",
+        "autoscaling:PutScheduledUpdateGroupAction"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
+      "Sid": "Stmt1463579005000",
+      "Effect": "Allow",
+      "Action": [
+        "cloudwatch:GetMetricStatistics"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}
