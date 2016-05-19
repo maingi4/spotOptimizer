@@ -343,7 +343,12 @@ export namespace AWS {
 
             var scheduleHour = ((hour * 60) + offset) / 60;
 
-            var split = scheduleHour.toString().split('.');
+            var schedulerhourstring = scheduleHour.toString();
+
+            if (schedulerhourstring.indexOf('.') == -1)
+                schedulerhourstring += '.0';
+
+            var split = schedulerhourstring.split('.');
 
             var newH = parseInt(split[0]);
 
