@@ -1,1 +1,60 @@
-# spotOptimizer
+Spot Optimizer
+==============
+
+Pre-Requistes
+-------------
+
+You should be using AWS as your cloud provider.
+
+Read this first: <https://github.com/maingi4/spotOptimizer/wiki/Devops:-How-to-look-good-and-save-money-while-setting-up-scaling-policies-in-AWS>
+
+You should already be setup with auto scaling and know its basics.
+
+What is it?
+-----------
+
+It’s an API which can be hosted in Lambda in conjunction with API gateway so that you pay next to nothing for using it or on any server which can run NodeJS. The API accepts certain parameters as input e.g.
+
+{
+
+"region": "&lt;the aws region that you are targeting&gt;", //e.g. us-east-1
+
+"onDemandAutoScaleGroup": "&lt;on demand auto scale group name&gt;",
+
+"spotAutoScaleGroup": "&lt;spot auto scale group name&gt;",
+
+"numberOfDaysBackToConsider": 3,
+
+"awsAccessKeyId": "&lt;your key&gt;", //see AWS policy doc (https://github.com/maingi4/spotOptimizer/blob/master/SpotServerOptimizer.Service.AWS/Scripts/definitions/AWS\_Policy\_Doc.json) for the permissions required in the key.
+
+"awsSecretAccessKey": "&lt;key's secret&gt;",
+
+"maxSpotPerHour": 20, //some sane limit
+
+"scalesOn": {
+
+"cpu": {
+
+"upperThresholdPercent": 60, //see the on demand auto scale group's scaling policy for this.
+
+"scalesWhenGreaterThanThresholdForSecs": 300 //see the on demand auto scale group's scaling policy for this.
+
+}
+
+}
+
+};
+
+And adds hourly schedules to the spot auto scaling group mentioned in the request to pro-actively add spot instances that you would need in order to minimize cost of running on demand instances. Spot servers cost a fraction of the cost of on demand and are significantly cheaper than reserved instances as well.
+
+How Do I Call this API?
+-----------------------
+
+In the project is a script which can be used to create a Lambda function in AWS (with inline code, it’s simple) which can be set to run on a schedule to call the API everyday, once a day is recommended to keep the schedule up to date as the load changes or your applications ability to handle load changes.
+
+The latter mentioned script can be found in the project code here: <https://github.com/maingi4/spotOptimizer/blob/master/SpotServerOptimizer.Service.AWS/Scripts/definitions/Scheduler.js>
+
+What Kinds of Scaling Policies does this API Support?
+-----------------------------------------------------
+
+Currently it only supports CPU based scaling, I will add other scaling types in time, and I will welcome contributions to this project to add more “Optimizers” {CPUOptimizer is the only one which exists right now} to support more strategies.
