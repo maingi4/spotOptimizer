@@ -1,6 +1,7 @@
 ﻿var https = require('https');
 
 exports.handler = function (event, context, callback) {
+    //var body = event; //uncomment this and comment the below line if passing body via cloud watch events (json input, useful for multiple applications with a single lambda function)
     var body = {
         "region": "<the aws region that you are targeting>", //e.g. us-east-1
         "onDemandAutoScaleGroup": "<on demand auto scale group name>",
