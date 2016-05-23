@@ -15,35 +15,23 @@ What is it?
 
 It’s an API which can be hosted in Lambda in conjunction with API gateway so that you pay next to nothing for using it or on any server which can run NodeJS. The API accepts certain parameters as input e.g.
 
-{
-
-"region": "&lt;the aws region that you are targeting&gt;", //e.g. us-east-1
-
-"onDemandAutoScaleGroup": "&lt;on demand auto scale group name&gt;",
-
-"spotAutoScaleGroup": "&lt;spot auto scale group name&gt;",
-
-"numberOfDaysBackToConsider": 3,
-
-"awsAccessKeyId": "&lt;your key&gt;", //see AWS policy doc (https://github.com/maingi4/spotOptimizer/blob/master/SpotServerOptimizer.Service.AWS/Scripts/definitions/AWS\_Policy\_Doc.json) for the permissions required in the key.
-
-"awsSecretAccessKey": "&lt;key's secret&gt;",
-
-"maxSpotPerHour": 20, //some sane limit
-
-"scalesOn": {
-
-"cpu": {
-
-"upperThresholdPercent": 60, //see the on demand auto scale group's scaling policy for this.
-
-"scalesWhenGreaterThanThresholdForSecs": 300 //see the on demand auto scale group's scaling policy for this.
-
-}
-
-}
-
-};
+```javascript
+    {
+        "region": "<the aws region that you are targeting>", //e.g. us-east-1
+        "onDemandAutoScaleGroup": "<on demand auto scale group name>",
+        "spotAutoScaleGroup": "<spot auto scale group name>",
+        "numberOfDaysBackToConsider": 3,
+        "awsAccessKeyId": "<your key>", //see aws policy doc (in this folder) for the permissions required in the key.
+        "awsSecretAccessKey": "<key's secret>",
+        "maxSpotPerHour": 20, //some sane limit
+        "scalesOn": {
+            "cpu": {
+                "upperThresholdPercent": 60, //see the on demand auto scale group's scaling policy for this. 
+                "scalesWhenGreaterThanThresholdForSecs": 300 //see the on demand auto scale group's scaling policy for this. 
+            }
+        }
+    };
+```
 
 And adds hourly schedules to the spot auto scaling group mentioned in the request to pro-actively add spot instances that you would need in order to minimize cost of running on demand instances. Spot servers cost a fraction of the cost of on demand and are significantly cheaper than reserved instances as well.
 
