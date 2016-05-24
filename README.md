@@ -1,6 +1,3 @@
-Spot Optimizer
-==============
-
 Pre-Requistes
 -------------
 
@@ -46,3 +43,8 @@ What Kinds of Scaling Policies does this API Support?
 -----------------------------------------------------
 
 Currently it only supports CPU based scaling, I will add other scaling types in time, and I will welcome contributions to this project to add more “Optimizers” {CPUOptimizer is the only one which exists right now} to support more strategies.
+
+Why an API?
+-----------
+
+API, so that you need only one to handle multiple AWS accounts, in the set up guide in this wiki you can choose to skip making an API and instead just create a Lambda function and schedule it for a single or multiple auto scaling groups.
