@@ -39,6 +39,8 @@ In the project is a script which can be used to create a Lambda function in AWS 
 
 The latter mentioned script can be found in the project code here: <https://github.com/maingi4/spotOptimizer/blob/master/SpotServerOptimizer.Service.AWS/Scripts/definitions/Scheduler.js>
 
+Easier though is to go through the setup guide here: <https://github.com/maingi4/spotOptimizer/wiki/Setting-It-Up>
+
 What Kinds of Scaling Policies does this API Support?
 -----------------------------------------------------
 
