@@ -17,15 +17,16 @@ exports.handler = function (event, context, callback) {
             }
         }
     };
+    var baseUrl = '<base url of the api>';
     var url = "/prod"; //path of the gateway
     var apiKey = "<your api key for api gateway>";
     
     var post_data = JSON.stringify(body);
     
     var post_options = {
-        host: '<base url of the api>',
+        host: baseUrl,
         port: '443',
-        path: '/prod',
+        path: url,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
