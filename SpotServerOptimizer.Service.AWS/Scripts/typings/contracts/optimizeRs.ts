@@ -33,6 +33,33 @@ export namespace Contracts {
         public twentyTwo: number;
         public twentyThree: number;
 
+        constructor() {
+            this.zero = 0;
+            this.one = 0;
+            this.two = 0;
+            this.three = 0;
+            this.four = 0;
+            this.five = 0;
+            this.six = 0;
+            this.seven = 0;
+            this.eight = 0;
+            this.nine = 0;
+            this.ten = 0;
+            this.eleven = 0;
+            this.twelve = 0;
+            this.thirteen = 0;
+            this.fourteen = 0;
+            this.fifteen = 0;
+            this.sixteen = 0;
+            this.seventeen = 0;
+            this.eighteen = 0;
+            this.nineteen = 0;
+            this.twenty = 0;
+            this.twentyOne = 0;
+            this.twentyTwo = 0;
+            this.twentyThree = 0;
+        }
+
         setPropertyByHour(hour: number, value: number) {
             switch (hour) {
                 case 0:

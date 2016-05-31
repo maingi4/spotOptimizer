@@ -6,6 +6,8 @@
   "awsAccessKeyId": "",
   "awsSecretAccessKey": "",
   "maxSpotPerHour": 10, //optional, no limit otherwise.
+  "enableTrafficPrediction": false,
+  "trafficPredictionLoadBalancerName": null, //the load balancer's name whose "sumRequests" metric will be used for traffic prediction
   "scalesOn": { //give any one child of this
     "requestCount": {
       "perServerThresholdPerMin": 200

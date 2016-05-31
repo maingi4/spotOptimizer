@@ -7,6 +7,8 @@
         awsAccessKeyId: string;
         awsSecretAccessKey: string;
         maxSpotPerHour: number;
+        enableTrafficPrediction: boolean;
+        trafficPredictionLoadBalancerName: string;
         scalesOn: ScalesOn;
     }
 

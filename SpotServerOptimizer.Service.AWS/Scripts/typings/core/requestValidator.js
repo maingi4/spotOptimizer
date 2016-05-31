@@ -25,6 +25,9 @@ var Validation;
             if (!rq.region) {
                 errors.push("request had region as empty.");
             }
+            if (rq.enableTrafficPrediction && !rq.trafficPredictionLoadBalancerName) {
+                errors.push("request had traffic prediction enabled but the 'trafficPredictionLoadBalancerName' was empty or invalid.");
+            }
             if (!rq.scalesOn) {
                 errors.push("request needs to have one (and only one) metric defined on the basis of which scaling happens.");
             }

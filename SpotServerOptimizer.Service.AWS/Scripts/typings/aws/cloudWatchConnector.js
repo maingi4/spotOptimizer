@@ -11,9 +11,16 @@ var AWS;
         }
         //scalesWhenGreaterThanThresholdForSecs property to define scaling, calculate peak of values which run together for these many seconds in an hour.
         cloudWatchConnector.prototype.getMetrics = function (daysToLookBack, namespace, name, periodSec, statType, filters, callback) {
+            this.getMetricsByDate(daysToLookBack, namespace, name, periodSec, statType, filters, null, null, callback);
+        };
+        cloudWatchConnector.prototype.getMetricsByDate = function (daysToLookBack, namespace, name, periodSec, statType, filters, startDate, endDate, callback) {
             var present = new Date();
             var pastDate = new Date();
             pastDate.setDate(pastDate.getDate() - daysToLookBack);
+            if (startDate)
+                pastDate = startDate;
+            if (endDate)
+                present = endDate;
             var params = {
                 StartTime: pastDate.toISOString(),
                 EndTime: present.toISOString(),

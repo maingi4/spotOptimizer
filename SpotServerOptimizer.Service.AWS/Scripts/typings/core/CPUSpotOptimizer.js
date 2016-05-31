@@ -5,6 +5,7 @@ var ex = require('../errors/SpotOptimizationError');
 var ce = require('../contracts/error');
 var as = require('../aws/autoScaleConnector');
 var sh = require('./ScheduleHelper');
+var ts = require('./TrafficShiftCalculator');
 var SpotOptimization;
 (function (SpotOptimization) {
     var CPUSpotOptimizer = (function () {
@@ -16,16 +17,18 @@ var SpotOptimization;
                     var autoScaleInstanceHistoryOnDemandPromise = this.getAutoScaleInstanceHistory(rq, AutoScaleGroupType.OnDemand);
                     var autoScaleInstanceHistorySpotPromise = this.getAutoScaleInstanceHistory(rq, AutoScaleGroupType.Spot);
                     var cpuPromise = this.getCPUMetrics(rq);
+                    var trafficShiftPromise = this.getTrafficPatternShift(rq);
                     var minSizePromise = this.getAutoScaleMinGroupSize(rq, AutoScaleGroupType.OnDemand);
-                    var combined = Q.all([autoScaleInstanceHistoryOnDemandPromise, autoScaleInstanceHistorySpotPromise, cpuPromise, minSizePromise]);
+                    var combined = Q.all([autoScaleInstanceHistoryOnDemandPromise, autoScaleInstanceHistorySpotPromise, cpuPromise, minSizePromise, trafficShiftPromise]);
                     var me = this;
                     combined.then(function (resp) {
                         var combinedSchedule = me.CombineASGroupSchedule(resp[0], resp[1]);
                         var cpuSchedule = resp[2];
                         var minSize = resp[3];
+                        var trafficShift = resp[4];
                         var minOnDemandSchedule = new sh.SpotOptimization.ScheduleHelper().createMonotoneSchedule(minSize);
                         var result = new rs.Contracts.OptimizeRs();
-                        var newOverallSchedule = me.AdjustForCPU(combinedSchedule, cpuSchedule, rq.scalesOn.cpu);
+                        var newOverallSchedule = me.AdjustForCPU(combinedSchedule, cpuSchedule, rq.scalesOn.cpu, trafficShift);
                         result.avgPrevSchedule = combinedSchedule;
                         result.newOverallSchedule = newOverallSchedule.shallowCopy();
                         result.newSpotSchedule = newOverallSchedule.doOperation(minOnDemandSchedule, rs.Contracts.ScheduleOperation.Substract);
@@ -40,38 +43,41 @@ var SpotOptimization;
                 this.wrapAndThrowUnknownError(e);
             }
         };
-        CPUSpotOptimizer.prototype.AdjustForCPU = function (instanceSchedule, cpuSchedule, cpu) {
+        CPUSpotOptimizer.prototype.AdjustForCPU = function (instanceSchedule, cpuSchedule, cpu, trafficShift) {
             var cpuAdjustedInstanceSchedule = new rs.Contracts.Schedule();
             var targetThreshold = this.getTargetThresholdCPU(cpu.upperThresholdPercent);
-            cpuAdjustedInstanceSchedule.zero = this.AdjustVal(instanceSchedule.zero, cpuSchedule.zero, targetThreshold);
-            cpuAdjustedInstanceSchedule.one = this.AdjustVal(instanceSchedule.one, cpuSchedule.one, targetThreshold);
-            cpuAdjustedInstanceSchedule.two = this.AdjustVal(instanceSchedule.two, cpuSchedule.two, targetThreshold);
-            cpuAdjustedInstanceSchedule.three = this.AdjustVal(instanceSchedule.three, cpuSchedule.three, targetThreshold);
-            cpuAdjustedInstanceSchedule.four = this.AdjustVal(instanceSchedule.four, cpuSchedule.four, targetThreshold);
-            cpuAdjustedInstanceSchedule.five = this.AdjustVal(instanceSchedule.five, cpuSchedule.five, targetThreshold);
-            cpuAdjustedInstanceSchedule.six = this.AdjustVal(instanceSchedule.six, cpuSchedule.six, targetThreshold);
-            cpuAdjustedInstanceSchedule.seven = this.AdjustVal(instanceSchedule.seven, cpuSchedule.seven, targetThreshold);
-            cpuAdjustedInstanceSchedule.eight = this.AdjustVal(instanceSchedule.eight, cpuSchedule.eight, targetThreshold);
-            cpuAdjustedInstanceSchedule.nine = this.AdjustVal(instanceSchedule.nine, cpuSchedule.nine, targetThreshold);
-            cpuAdjustedInstanceSchedule.ten = this.AdjustVal(instanceSchedule.ten, cpuSchedule.ten, targetThreshold);
-            cpuAdjustedInstanceSchedule.eleven = this.AdjustVal(instanceSchedule.eleven, cpuSchedule.eleven, targetThreshold);
-            cpuAdjustedInstanceSchedule.twelve = this.AdjustVal(instanceSchedule.twelve, cpuSchedule.twelve, targetThreshold);
-            cpuAdjustedInstanceSchedule.thirteen = this.AdjustVal(instanceSchedule.thirteen, cpuSchedule.thirteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.fourteen = this.AdjustVal(instanceSchedule.fourteen, cpuSchedule.fourteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.fifteen = this.AdjustVal(instanceSchedule.fifteen, cpuSchedule.fifteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.sixteen = this.AdjustVal(instanceSchedule.sixteen, cpuSchedule.sixteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.seventeen = this.AdjustVal(instanceSchedule.seventeen, cpuSchedule.seventeen, targetThreshold);
-            cpuAdjustedInstanceSchedule.eighteen = this.AdjustVal(instanceSchedule.eighteen, cpuSchedule.eighteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.nineteen = this.AdjustVal(instanceSchedule.nineteen, cpuSchedule.nineteen, targetThreshold);
-            cpuAdjustedInstanceSchedule.twenty = this.AdjustVal(instanceSchedule.twenty, cpuSchedule.twenty, targetThreshold);
-            cpuAdjustedInstanceSchedule.twentyOne = this.AdjustVal(instanceSchedule.twentyOne, cpuSchedule.twentyOne, targetThreshold);
-            cpuAdjustedInstanceSchedule.twentyTwo = this.AdjustVal(instanceSchedule.twentyTwo, cpuSchedule.twentyTwo, targetThreshold);
-            cpuAdjustedInstanceSchedule.twentyThree = this.AdjustVal(instanceSchedule.twentyThree, cpuSchedule.twentyThree, targetThreshold);
+            if (!trafficShift)
+                trafficShift = new rs.Contracts.Schedule();
+            cpuAdjustedInstanceSchedule.zero = this.AdjustVal(instanceSchedule.zero, cpuSchedule.zero, targetThreshold, trafficShift.zero);
+            cpuAdjustedInstanceSchedule.one = this.AdjustVal(instanceSchedule.one, cpuSchedule.one, targetThreshold, trafficShift.one);
+            cpuAdjustedInstanceSchedule.two = this.AdjustVal(instanceSchedule.two, cpuSchedule.two, targetThreshold, trafficShift.two);
+            cpuAdjustedInstanceSchedule.three = this.AdjustVal(instanceSchedule.three, cpuSchedule.three, targetThreshold, trafficShift.three);
+            cpuAdjustedInstanceSchedule.four = this.AdjustVal(instanceSchedule.four, cpuSchedule.four, targetThreshold, trafficShift.four);
+            cpuAdjustedInstanceSchedule.five = this.AdjustVal(instanceSchedule.five, cpuSchedule.five, targetThreshold, trafficShift.five);
+            cpuAdjustedInstanceSchedule.six = this.AdjustVal(instanceSchedule.six, cpuSchedule.six, targetThreshold, trafficShift.six);
+            cpuAdjustedInstanceSchedule.seven = this.AdjustVal(instanceSchedule.seven, cpuSchedule.seven, targetThreshold, trafficShift.seven);
+            cpuAdjustedInstanceSchedule.eight = this.AdjustVal(instanceSchedule.eight, cpuSchedule.eight, targetThreshold, trafficShift.eight);
+            cpuAdjustedInstanceSchedule.nine = this.AdjustVal(instanceSchedule.nine, cpuSchedule.nine, targetThreshold, trafficShift.nine);
+            cpuAdjustedInstanceSchedule.ten = this.AdjustVal(instanceSchedule.ten, cpuSchedule.ten, targetThreshold, trafficShift.ten);
+            cpuAdjustedInstanceSchedule.eleven = this.AdjustVal(instanceSchedule.eleven, cpuSchedule.eleven, targetThreshold, trafficShift.eleven);
+            cpuAdjustedInstanceSchedule.twelve = this.AdjustVal(instanceSchedule.twelve, cpuSchedule.twelve, targetThreshold, trafficShift.twelve);
+            cpuAdjustedInstanceSchedule.thirteen = this.AdjustVal(instanceSchedule.thirteen, cpuSchedule.thirteen, targetThreshold, trafficShift.thirteen);
+            cpuAdjustedInstanceSchedule.fourteen = this.AdjustVal(instanceSchedule.fourteen, cpuSchedule.fourteen, targetThreshold, trafficShift.fourteen);
+            cpuAdjustedInstanceSchedule.fifteen = this.AdjustVal(instanceSchedule.fifteen, cpuSchedule.fifteen, targetThreshold, trafficShift.fifteen);
+            cpuAdjustedInstanceSchedule.sixteen = this.AdjustVal(instanceSchedule.sixteen, cpuSchedule.sixteen, targetThreshold, trafficShift.sixteen);
+            cpuAdjustedInstanceSchedule.seventeen = this.AdjustVal(instanceSchedule.seventeen, cpuSchedule.seventeen, targetThreshold, trafficShift.seventeen);
+            cpuAdjustedInstanceSchedule.eighteen = this.AdjustVal(instanceSchedule.eighteen, cpuSchedule.eighteen, targetThreshold, trafficShift.eighteen);
+            cpuAdjustedInstanceSchedule.nineteen = this.AdjustVal(instanceSchedule.nineteen, cpuSchedule.nineteen, targetThreshold, trafficShift.nineteen);
+            cpuAdjustedInstanceSchedule.twenty = this.AdjustVal(instanceSchedule.twenty, cpuSchedule.twenty, targetThreshold, trafficShift.twenty);
+            cpuAdjustedInstanceSchedule.twentyOne = this.AdjustVal(instanceSchedule.twentyOne, cpuSchedule.twentyOne, targetThreshold, trafficShift.twentyOne);
+            cpuAdjustedInstanceSchedule.twentyTwo = this.AdjustVal(instanceSchedule.twentyTwo, cpuSchedule.twentyTwo, targetThreshold, trafficShift.twentyTwo);
+            cpuAdjustedInstanceSchedule.twentyThree = this.AdjustVal(instanceSchedule.twentyThree, cpuSchedule.twentyThree, targetThreshold, trafficShift.twentyThree);
             return cpuAdjustedInstanceSchedule;
         };
-        CPUSpotOptimizer.prototype.AdjustVal = function (instanceNumber, cpuNumber, targetThreshold) {
+        CPUSpotOptimizer.prototype.AdjustVal = function (instanceNumber, cpuNumber, targetThreshold, trafficShiftExpectedInTheHour) {
             var deltaFromThreshold = -((targetThreshold - cpuNumber) / targetThreshold);
-            var target = Math.ceil(instanceNumber + (deltaFromThreshold * instanceNumber));
+            var target = instanceNumber + (deltaFromThreshold * instanceNumber);
+            target = Math.ceil(target + (target * trafficShiftExpectedInTheHour / 100));
             return target;
         };
         CPUSpotOptimizer.prototype.getTargetThresholdCPU = function (scaleUpperThresholdCPU) {
@@ -108,6 +114,22 @@ var SpotOptimization;
                     return;
                 }
                 deferred.resolve(history);
+            });
+            return deferred.promise;
+        };
+        CPUSpotOptimizer.prototype.getTrafficPatternShift = function (rq) {
+            if (!rq.enableTrafficPrediction)
+                return Q.fcall(function () {
+                    return null;
+                });
+            var trafficPatternShiftCalc = new ts.SpotOptimization.TrafficShiftCalculator(rq.region, rq.awsAccessKeyId, rq.awsSecretAccessKey);
+            var deferred = Q.defer();
+            trafficPatternShiftCalc.GetPastTrafficShift(rq.trafficPredictionLoadBalancerName, function (trafficDiff, e) {
+                if (e) {
+                    deferred.reject(e);
+                    return;
+                }
+                deferred.resolve(trafficDiff);
             });
             return deferred.promise;
         };

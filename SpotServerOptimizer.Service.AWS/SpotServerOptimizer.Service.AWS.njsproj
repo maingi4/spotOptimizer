@@ -53,6 +53,7 @@
     <TypeScriptCompile Include="Scripts\typings\core\ScheduleHelper.ts" />
     <TypeScriptCompile Include="Scripts\typings\core\ScheduleUpdater.ts" />
     <TypeScriptCompile Include="Scripts\typings\core\SpotOptimizerFactory.ts" />
+    <TypeScriptCompile Include="Scripts\typings\core\TrafficShiftCalculator.ts" />
     <TypeScriptCompile Include="Scripts\typings\errors\SpotOptimizationError.ts" />
     <TypeScriptCompile Include="Scripts\typings\interfaces\IOptimizer.ts" />
     <TypeScriptCompile Include="Scripts\typings\interfaces\IResponseSender.ts" />
