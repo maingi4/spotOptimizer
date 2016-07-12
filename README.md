@@ -3,7 +3,7 @@ Pre-Requistes
 
 You should be using AWS as your cloud provider.
 
-Read this first: <https://github.com/maingi4/spotOptimizer/wiki/Devops:-How-to-look-good-and-save-money-while-setting-up-scaling-policies-in-AWS>
+Read this first: <https://cloudncode.wordpress.com/2016/07/07/devops-hybrid-scale-strategy-aws/>
 
 You should already be setup with auto scaling and know its basics.
 
